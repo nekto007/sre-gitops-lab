@@ -280,7 +280,7 @@
     }
   ],
   "preload": false,
-  "refresh": "",
+  "refresh": "1m",
   "schemaVersion": 42,
   "time": {
     "from": "now-6h",

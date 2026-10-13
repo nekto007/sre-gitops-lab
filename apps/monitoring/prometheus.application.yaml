@@ -1,5 +1,5 @@
 apiVersion: argoproj.io/v1alpha1
-king: Application
+kind: Application
 metadata:
   name: prometheus
   namespace: argocd
@@ -18,7 +18,7 @@ spec:
           enabled: false
         prometheus-node-exporter:
           enabled: false
-        prometheus-ppushgateway:
+        prometheus-pushgateway:
           enabled: false
 
         server:
@@ -32,8 +32,8 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
-          limits:
-            memory: 768Mi
+            limits:
+              memory: 768Mi
 
         extraScrapeConfigs: |
           - job_name: llt-health
@@ -44,18 +44,18 @@ spec:
               module: [llt_health]
             static_configs:
               - targets:
-                  https://llt-english.com/health
+                  - https://llt-english.com/health
             relabel_configs:
               - source_labels: [__address__]
-                target_label: __param_target__
+                target_label: __param_target
               - source_labels: [__param_target]
                 target_label: instance
               - target_label: __address__
-                replacenet: blackbox.monitoring.svc.cluster.local:9115
-destination:
-  server: https://kubernetes.default.svc
-  namespace: monitoring
+                replacement: blackbox.monitoring.svc.cluster.local:9115
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
 
-syncPolicy:
-  syncOptions:
-    - CreateNamespace=true  
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true  

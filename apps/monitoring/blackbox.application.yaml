@@ -40,4 +40,4 @@ spec:
 
   syncPolicy:
     syncOptions:
-      - CreteNamespace=true
+      - CreateNamespace=true

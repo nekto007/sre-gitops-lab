@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana
+  namespace: argocd
+spec:
+  project: default
+  
+  source:
+    repoURL: https://grafana-community.github.io/helm-charts
+    chart: grafana
+    targetRevision: 13.5.0
+    helm:
+      valuesObject:
+        fullnameOverride: grafana
+        
+        admin:
+          existingSecret: grafana-admin
+
+        persistence:
+          enabled: true
+          size: 1Gi
+
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
+
+        datasources:
+          datasources.yaml:
+            apiVersion: 1
+            datasources:
+              - name: Protetheus
+                uid: prometheus
+                type: prometheus
+                access: proxy
+                url: http://prometheus.monitoring.svc.cluster.local
+                isDefault: true
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,35 @@
+name: Validate manifests
+
+'on':
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    name: YAML and JSON
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install validators
+        run: python -m pip install yamllint==1.38.0
+
+      - name: Validate YAML
+        run: yamllint -c .yamllint.yaml .github apps bootstrap .yamllint.yaml
+
+      - name: Validate dashboard JSON
+        run: python -m json.tool dashboards/llt-external-health.json > /dev/null

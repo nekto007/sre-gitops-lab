@@ -13,27 +13,83 @@ spec:
     helm:
       valuesObject:
         alertmanager:
-          enabled: false
-        kube-state-metrics:
-          enabled: false
-        prometheus-node-exporter:
-          enabled: false
-        prometheus-pushgateway:
-          enabled: false
+          enabled: true
+          fullnameOverride: alertmanager
+
+          persistence:
+            enabled: true
+            size: 50Mi
+          
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          
+          extraSecretMounts:
+            - name: telegram-token
+              mountPath: /etc/alertmanager/telegram
+              secretName: alertmanager-telegram
+              readOnly: true
+
+          config:
+            enabled: true
+            route:
+              receiver: telegram
+              group_by: [alertname, instance]
+              group_wait: 15s
+              group_interval: 1m
+              repeat_interval: 4h
+            receivers:
+              - name: telegram
+                telegram_configs:
+                  - bot_token_file: /etc/alertmanager/telegram/bot-token
+                    chat_id: 6885580
+                    send_resolved: true
+
+        serverFiles:
+          alerting_rules.yml:
+            groups:
+              - name: delivery-test
+                rules:
+                  - alert: TelegramDeliveryTest
+                    expr: vector(1)
+                    for: 1m
+                    labels:
+                      severity: info
+                      environment: lab
+                    annotations:
+                      summary: "Training alert: Telegram delivery test"
+                      description: "This is a monitoring test. It does not indicate a website outage."
 
         server:
           fullnameOverride: prometheus
           retention: 7d
           retentionSize: 1GB
+          
           persistentVolume:
             enabled: true
             size: 2Gi
+    
           resources:
             requests:
               cpu: 100m
               memory: 256Mi
             limits:
               memory: 768Mi
+
+          alertmanagers:
+            - static_configs:
+                - targets:
+                    - alertmanager.monitoring.svc.cluster.local:9093
+        
+        kube-state-metrics:
+          enabled: false
+        prometheus-node-exporter:
+          enabled: false
+        prometheus-pushgateway:
+          enabled: false
 
         extraScrapeConfigs: |
           - job_name: llt-health

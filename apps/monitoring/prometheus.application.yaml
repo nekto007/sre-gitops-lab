@@ -51,17 +51,33 @@ spec:
         serverFiles:
           alerting_rules.yml:
             groups:
-              - name: delivery-test
+              - name: llt-external-health
                 rules:
-                  - alert: TelegramDeliveryTest
-                    expr: vector(0) > 0
-                    for: 1m
+                  - alert: LLTHealthCheckFailed
+                    expr: probe_success{job="llt-health"} == 0
+                    for: 3m
                     labels:
-                      severity: info
-                      environment: lab
+                      severity: critical
                     annotations:
-                      summary: "Training alert: Telegram delivery test"
-                      description: "This is a monitoring test. It does not indicate a website outage."
+                      summary: "LLT health check is failing"
+                      description: "The HTTPS health check has failed for at least 3 minutes. Check Http status, TLS, response body and database connectivity."
+                  - alert: LLTMonitoringDataMissing
+                    expr: up{job="llt-health"} == 0 or absent(up{job="llt-health"}) or absent(probe_success{job="llt-health"})
+                    for: 3m
+                    labels:
+                      severity: warning
+                    annotations:
+                      summary: "LLT monitoring results are unavailable"
+                      description: "Prometheus cannot collect probe results or the expected metrics are missing. Website availability is unknown."
+                  
+                  - alert: LLTCertificateExpiring
+                    expr: (probe_ssl_earliest_cert_expiry{job="llt-health"} - time()) / 86400 < 14
+                    for: 10m
+                    labels:
+                      severity: warning
+                    annotations:
+                      summary: "LLT TLS certificate expires in less than 14 days"
+                      description: "Check certificate renewal and the certificate served by the public endpoint."
 
         server:
           fullnameOverride: prometheus

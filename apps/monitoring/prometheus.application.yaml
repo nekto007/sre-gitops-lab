@@ -79,15 +79,6 @@ spec:
                       summary: "LLT TLS certificate expires in less than 14 days"
                       description: "Check certificate renewal and the certificate served by the public endpoint."
                   
-                  - alert: TrainingProbeFailed
-                    expr: probe_success{job="blackbox-training"} == 0
-                    for: 1m
-                    labels:
-                      severity: info
-                    annotations:
-                      summary: "Training: expected probe failure"
-                      description: "The deliberately invalid training target is unavailable. This is not an LLT outage."
-
         server:
           fullnameOverride: prometheus
           retention: 7d
@@ -133,19 +124,7 @@ spec:
                 target_label: instance
               - target_label: __address__
                 replacement: blackbox.monitoring.svc.cluster.local:9115
-          - job_name: blackbox-training
-            scrape_interval: 60s
-            scrape_timeout: 10s
-            metrics_path: /probe
-            params:
-              module: [llt_health]
-              target: ["https://llt-english.com/health"]
-            static_configs:
-              - targets:
-                  - blackbox.monitoring.svc.cluster.local:9115
-                labels:
-                  instance: "https://training.invalid/health"
-                  environment: training
+
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

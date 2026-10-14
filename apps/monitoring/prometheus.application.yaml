@@ -139,7 +139,7 @@ spec:
             metrics_path: /probe
             params:
               module: [llt_health]
-              target: ["https://training.invalid/health"]
+              target: ["https://llt-english.com/health"]
             static_configs:
               - targets:
                   - blackbox.monitoring.svc.cluster.local:9115

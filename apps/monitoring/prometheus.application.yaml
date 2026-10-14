@@ -54,7 +54,7 @@ spec:
               - name: delivery-test
                 rules:
                   - alert: TelegramDeliveryTest
-                    expr: vector(1)
+                    expr: vector(0) > 0
                     for: 1m
                     labels:
                       severity: info

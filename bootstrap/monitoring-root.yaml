@@ -1,5 +1,5 @@
 apiVersion: argoproj.io/v1alpha1
-kind: Application
+king: Application
 metadata:
   name: monitoring-config
   namespace: argocd

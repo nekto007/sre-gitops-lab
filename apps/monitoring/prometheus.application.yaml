@@ -139,7 +139,7 @@ spec:
             scrape_timeout: 10s
             static_configs:
               - targets:
-                  - kube-state-metrics.monitoring.svc.cluster.local:8000
+                  - kube-state-metrics.monitoring.svc.cluster.local:8080
 
   destination:
     server: https://kubernetes.default.svc

@@ -1,0 +1,4 @@
+- что мониторим: https://llt-english.com/health;
+- компоненты: Argo CD, Blackbox Exporter, Prometheus, Grafana, Alertmanager;
+- что проверяет CI;
+- ограничение: мониторинг работает, пока запущена лаба на Mac.

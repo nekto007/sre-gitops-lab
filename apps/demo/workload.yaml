@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo
+  namespace: lab
+spec:
+  replicas: 2
+  minReadySeconds: 5
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+
+  selector:
+    matchLabels:
+      app: demo
+
+  template:
+    metadata:
+      labels:
+        app: demo
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: web
+          image: python:3.13-alpine
+          command:
+            - python
+            - -m
+            - http.server
+            - "8080"
+            - --directory
+            - /tmp
+          ports:
+            - name: http
+              containerPort: 8080
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 5
+
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo
+  namespace: lab
+spec:
+  selector:
+    app: demo
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

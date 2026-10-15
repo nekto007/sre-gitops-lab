@@ -54,7 +54,7 @@ spec:
               - name: llt-external-health
                 rules:
                   - alert: LLTHealthCheckFailed
-                    expr: probe_success{job="llt-health"} ==
+                    expr: probe_success{job="llt-health"} == 0
                     for: 3m
                     labels:
                       severity: critical

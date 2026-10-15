@@ -101,7 +101,17 @@ spec:
                     - alertmanager.monitoring.svc.cluster.local:9093
         
         kube-state-metrics:
-          enabled: false
+          enabled: true
+          fullnameOverride: kube-state-metrics
+          prometheusScrape: false
+
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+
         prometheus-node-exporter:
           enabled: false
         prometheus-pushgateway:
@@ -124,6 +134,12 @@ spec:
                 target_label: instance
               - target_label: __address__
                 replacement: blackbox.monitoring.svc.cluster.local:9115
+          - job_name: kube-state-metrics
+            scrape_interval: 30s
+            scrape_timeout: 10s
+            static_configs:
+              - targets:
+                  - kube-state-metrics.monitoring.svc.cluster.local:8000
 
   destination:
     server: https://kubernetes.default.svc

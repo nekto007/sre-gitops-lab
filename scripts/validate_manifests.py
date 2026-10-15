@@ -88,4 +88,37 @@ for path in paths:
 
         print(f"  Helm render passed: {name}, {len(resources)} resources")
 
+        if name == "prometheus":
+            config_map = next(
+                item for item in resources
+                if item["kind"] == "ConfigMap" and "alerting_rules.yml" in item.get("data", {})
+            )
+            rules_text = config_map["data"]["alerting_rules.yml"]
+
+            workload = next(
+                item for item in resources
+                if item["kind"] in ("Deployment", "StatefulSet") and item["metadata"]["name"] == name
+            )
+            containers = workload["spec"]["template"]["spec"]["containers"]
+            image = next(
+                container["image"] for container in containers
+                if container["name"] == "prometheus-server"
+            )
+
+            print(f"  Checking Prometheus rules using {image}", flush=True)
+
+            subprocess.run(
+                [
+                   "docker", "run", "--rm", "-i",
+                   "--network", "none",
+                   "--entrypoint", "/bin/promtool",
+                   image,
+                   "check", "rules", "--lint-fatal", "/dev/stdin",
+                ],
+                input=rules_text,
+                text=True,
+                check=True,
+                timeout=180,
+            )
+
 print("All manifest checks passed")

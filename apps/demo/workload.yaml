@@ -40,7 +40,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /
-              port: 8081
+              port: http
             initialDelaySeconds: 2
             periodSeconds: 5
 

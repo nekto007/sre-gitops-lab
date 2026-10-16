@@ -78,7 +78,23 @@ spec:
                     annotations:
                       summary: "LLT TLS certificate expires in less than 14 days"
                       description: "Check certificate renewal and the certificate served by the public endpoint."
-                  
+
+              - name: lab-workloads
+                rules:
+                  - alert: LabDeploymentReplicasMissing
+                    expr: |
+                      (
+                        kube_deployment_spec_replicas{namespace="lab"}
+                        - on(namespace, deployment)
+                        kube_deployment_status_replicas_available{namespace="lab"}
+                      ) > 0
+                    for: 2m
+                    labels:
+                      severity: warning
+                      environment: lab
+                    annotations:
+                      summary: "Lab Deployment has unavailable replicas"
+                      description: "Available replicas have remained below the desired count for at least 2 minutes. Check rollout status and readiness probes."    
         server:
           fullnameOverride: prometheus
           retention: 7d

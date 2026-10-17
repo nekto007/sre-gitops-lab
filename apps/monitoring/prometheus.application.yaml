@@ -95,6 +95,30 @@ spec:
                     annotations:
                       summary: "Lab Deployment has unavailable replicas"
                       description: "Available replicas have remained below the desired count for at least 2 minutes. Check rollout status and readiness probes."    
+
+              - name: postgres-lab
+                rules:
+                  - alert: LabPostgresConnectionFailed
+                    expr: pg_up{job="postgres-exporter"} == 0
+                    for: 2m
+                    labels:
+                      severity: warning
+                      environment: lab
+                    annotations:
+                      summary: "Lab PostgreSQL connection failed"
+                      description: "The exporter has been unable to connect to PostgreSQL for at least 2 minutes. Check the database, network and credentials."
+                  - alert: LabPostgresMonitoringUnavailable
+                    expr: |
+                      up{job="postgres-exporter"} == 0
+                      or absent(up{job="postgres-exporter"})
+                      or absent(pg_up{job="postgres-exporter"})
+                    for: 2m
+                    labels:
+                      severity: warning
+                      environment: lab
+                    annotations:
+                      summary: "Lab PostgreSQL monitoring is unavailable"
+                      description: "Exporter scraping is failing or expected metrics are missing. Database availability is unknown."
         server:
           fullnameOverride: prometheus
           retention: 7d

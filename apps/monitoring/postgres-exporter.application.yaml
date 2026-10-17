@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgres-exporter
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: prometheus-postgres-exporter
+    targetRevision: 8.2.0
+    helm:
+      valuesObject:
+        fullnameOverride: postgres-exporter
+        
+        service:
+          port: 9187
+          targetPort: 9187
+
+        serviceMonitor:
+          enabled: false
+
+        config:
+          datasource:
+            host: postgres.database-lab.svc.cluster.local
+            port: "5432"
+            database: labdb
+            user: postgres_exporter
+            sslmode: disable
+            passwordSecret:
+              name: postgres-exporter
+              key: password
+
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: database-lab
+
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

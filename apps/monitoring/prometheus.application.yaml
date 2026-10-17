@@ -193,6 +193,13 @@ spec:
               - source_labels: [__meta_kubernetes_endpointslice_endpoint_node_name]
                 target_label: instance
 
+          - job_name: postgres-exporter
+            scrape_interval: 30s
+            scrape_timeout: 10s
+            static_configs:
+              - targets:
+                  - postgres-exporter.database-lab.svc.cluster.local:9187
+
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
